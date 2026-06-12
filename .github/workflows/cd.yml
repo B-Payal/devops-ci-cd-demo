@@ -88,6 +88,11 @@ jobs:
               sudo docker rm "$CONTAINER" || true
             fi
 
+            # Force kill any process using the port
+            echo "Ensuring port $PORT is free..."
+            sudo lsof -ti:$PORT | xargs sudo kill -9 || true
+            sleep 2
+
             echo "Starting new container..."
             sudo docker run -d \
               --name "$CONTAINER" \
