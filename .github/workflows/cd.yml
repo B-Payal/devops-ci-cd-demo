@@ -88,10 +88,13 @@ jobs:
               sudo docker rm "$CONTAINER" || true
             fi
 
-            # Force kill any process using the port
+            # Remove any container still publishing the target port
             echo "Ensuring port $PORT is free..."
-            sudo lsof -ti:$PORT | xargs sudo kill -9 || true
-            sleep 2
+            OCCUPYING_CONTAINERS="$(sudo docker ps --filter "publish=${PORT}" -q)"
+            if [ -n "$OCCUPYING_CONTAINERS" ]; then
+              echo "Removing containers using port $PORT..."
+              sudo docker rm -f $OCCUPYING_CONTAINERS
+            fi
 
             echo "Starting new container..."
             sudo docker run -d \
